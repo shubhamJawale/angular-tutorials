@@ -1,27 +1,28 @@
-# MyFrstApp
+basically angular is used to create the single page application
+so following will be the excution flow of the app
+the flow off the app is as follows :-
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 15.2.7.
+1. it will run main.ts
+   in main.ts there is a single line
 
-## Development server
+   ````ts
+    platformBrowserDynamic().bootstrapModule(AppModule)
+   .catch(err => console.error(err)); ```
+   ````
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+   so in above snippet there is AppModule which spacifies our app module which has all our app component registry which in built or user defined components we need are present in the app module file
 
-## Code scaffolding
+   2. from the main.ts file the app module is getting excuted
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+```ts
+@NgModule({
+  // declarations has the registry of components
+  declarations: [AppComponent, AlertComponent],
+  imports: [BrowserModule],
+  providers: [],
+  bootstrap: [AppComponent],
+})
+export class AppModule {}
+```
 
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+the module is an ordinary typescript class
