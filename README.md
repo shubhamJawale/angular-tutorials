@@ -170,3 +170,287 @@ and to use it in html there is another syntax as follows
 ```html
 <div class="selector-name"></div>
 ```
+
+## Data Binding
+
+data binding is communication between html template and buisness logic class
+
+![Alt text](./src/assets/t1.png " data binding")
+
+summary :-
+
+1. one way binding
+
+output from ts to html
+
+- string interpolation
+  ex. {{data}}
+
+- property binding
+  ex. [property] = "data"
+
+input html to typescript
+
+- event binding
+  ex. (event) = "expression
+
+2. two way binding
+   (combination of output and input)
+   [(ngModel)] = "data"
+
+### 1. string interpolation
+
+string interpolation is used to show dynamic strings on the html template
+so there are few basic rules to follow
+
+            **_rules_** : -
+                  1. in string interpolation we can use anything which returns string or which converts end results into the string ( we can use functions as well which returns string)
+                  2. we can not use multiline code, if-else and flow controllers like for loop, switch cases etc.
+                  3. we cam use ternery expression though
+                  4. for function in string interpolation use () as well ex. {{function_name()}}
+
+- basic flow :-
+  **_step 1_** :
+  in component file we have to declare and assign to variable which will define the string
+  ex.
+
+  ```ts
+  @Component({
+    selector: "app-root",
+    templateUrl: "./app.component.html",
+    styleUrls: ["./app.component.css"],
+  })
+  export class AppComponent {
+    // declaring the string whose variable names will be used in string interpolation data binding
+    varaibleName: "data";
+    // declaring the function which will return the string
+    functionWhichReturnString() {
+      return "string";
+    }
+  }
+  ```
+
+  **_step 2_** :
+  in template file we can have the syntax as follows
+  in template file we have to use the variable and function name is string interpolation
+
+  ```html
+  <div>{{variableName}} {{functionWhichRetutnString()}}</div>
+  ```
+
+  there is also we can use one thing we can use string as well in string interpolation
+  ex.
+
+  ```html
+  <div>{{'string which will render as it is due to quotes'}}</div>
+  ```
+
+  we can use both ' ' or " "
+
+### 2. property binding
+
+      basics : - when page gets loaded in the browser the respactive dom get loaded browser converts the dom into tree of elements(tags)
+                each elements has several properties
+                example.
+                 <Button disabled></Button>
+                 here disabled is property on button tag
+
+so lets get to it so we can change the behaviour of dom with the help of the property binding
+to bind any property with the dynamic data we use the property binding
+
+so there are few steps we need to follow :-
+**_step 1_** :
+in component.ts file we need few things
+
+```ts
+@Component({
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.css"],
+})
+export class AppComponent {
+  // so we need constructor for the class the constructor will get loaded once the component is rendered in the browser
+  // in constructor will add timeout method which will change the varaible after some time
+
+  // lets declare the varaible which defines as boolean which will be used to disable or enable the button
+  buttonState = false;
+
+  constructor() {
+    setTimeOut(() => {
+      this.buttonState = true;
+    }, 2000);
+    // this will change the variable to true after 2000 ms
+  }
+}
+```
+
+**_step 2_** :
+we need to use the variable as property binding in our html template as follows
+
+```html
+// the disabled is already existing property on the button tag the format of the property binding is easy as property should be in square brackets '[ ]' the value we need to implement in the " " double qoutes
+
+<button [disabled]="!buttonState"></button>
+
+syntax : - [property] = value to the property
+```
+
+**_Note_** :-
+
+1. we can bind many properties from html elements
+2. also for directives and component we can bind the properties
+3. we use the angular cause it changes template (dom/rendered component at runtime) very easily
+
+**_when to use what?_**
+
+- when you want to display a text or something use string interpolation
+- when you want to change some property use property binding
+
+### 3. Event Binding
+
+we can bind any event occured in dom with event binding
+following are the steps to follow for event binding :
+
+**_step 1_** :
+in component.ts
+create function which will excute when the event occurs
+
+```ts
+@Component({
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.css"],
+})
+export class AppComponent {
+  stringToChange = "first String";
+
+  constructor() {}
+  // this function will be excuted on the button click
+  functionWhichWillChangeTheStringOnClick() {
+    this.stringToChange = "second String";
+  }
+}
+```
+
+**_step 2_** :
+using the syntax of event binding we can bind any event in the template
+Syntax => (event)= "expression or function call"
+
+```html
+// we are using the string interploation to show the string variable
+<p>{{stringToChange}}</p>
+// to event occure will add the button when it is clicked the click event is occured so will bind that event change the string
+<button (click)="functionWhichWillChangeTheStringOnClick()">Click Me To Change The String</button>
+```
+
+so in above example when button gets clicked the string will be get changes from "first string" to "second string"
+
+[NOTE] :
+
+- we can bind each and every event
+- we need to remove the prefix "on" from the event name
+  ex. basically the event on button is "onClick" so while using in the event binding syntax we need to remove 'on' from the event
+  (click)=> "function()"
+- we can any expression or typescript code in " " (double qoutes)
+  ex. (click)=> "Code in typeScript or expression in typescript"
+
+### 4. two way binding
+
+the two way binding uses the three types of data binding string interpolation, property binding, event binding.
+
+we are taking the basic example which will show the draw back of the basic two way binding
+
+steps :-
+**_step 1_** :
+in html template we can declare the the event binding and string interpolation
+ex.
+
+```html
+<input type="text" (input)="onInputChangeFunction($event)" />
+// this $event is the reserved keyword which will use to pass the event into the function and the input is the event that already exists in file
+<p>{{inputText}}</p>
+// input text variable is declared in component.ts file
+```
+
+**_step 2_** :
+in component.ts file we need to handle the event occured on template and set value to variable inputText which will be shown under the box
+
+```ts
+@Component({
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.css"],
+})
+export class AppComponent {
+  // this will be the input text
+  inputText = "";
+
+  constructor() {}
+  // this function will excute on the input event is trigger
+  // so for the event we need to spacify the type of event as HtmlInputElement else the typescript will throw the error
+  // there is already present Event type for the typescript
+  onInputChangeFunction(event: Event) {
+    this.inputText = (<HTMLInputElement>event.target).value;
+  }
+}
+```
+
+this will basically take the text as input and will print under placeholder
+
+- **_DrawBack_** :-
+
+- this above method has one draw back that it will change the variable when we change it from input placholder or we change variable internally but only the value under the placeholder that we represented in paragrap as string interpoletion will change but not in the place holder
+- place holder will remain unchanged regarding the changes in variable
+- this will act as the one side data binding
+
+to overcome this drawback we need to go through the advanced method which uses the forms module of angular
+**_step 1_** :
+so first we need to import forms module in app.module
+as we seen earlier in imports array of @ngModule will need to add the
+example
+
+```ts
+  import { FormsModule } from @angular/forms // imported from the angular/forms module
+@NgModule({
+  // declarations has the registry of components
+  declarations: [
+    AppComponent,
+    AlertComponent
+  ],
+  imports: [
+    BrowserModule,
+    FormsModule // this module we added here so it can be easily use in app
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+```
+
+**_step 2_** :
+so for two way binding there is simple way
+in html template we need to use ngModel directive which will give the two way binding
+
+ex.
+
+```html
+<input type="input" [(ngModel)]="TextToChange" /> // text to change is the variable that is already have been declared in the component.ts file
+```
+
+and in component.ts file we just need to declare the string nothing more than that. no function to handel the event is required
+ex.
+
+```ts
+@Component({
+  selector: "app-root",
+  templateUrl: "./app.component.html",
+  styleUrls: ["./app.component.css"],
+})
+export class AppComponent {
+  // this will be the text will change with ng-model directive of forms
+  TextToChange = "";
+
+  constructor() {}
+}
+```
