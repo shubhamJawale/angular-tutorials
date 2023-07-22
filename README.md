@@ -159,7 +159,7 @@ description : the html tags also has a class
 so we can use our selector as class name also
 
 so the syntax is as follows
-so to give the selector as class property we need to prefix the selector name with _._
+so to give the selector as class property we need to prefix the selector name with " _._" (dot/fullstop)
 
 ```ts
 selector: ".selector-name";
