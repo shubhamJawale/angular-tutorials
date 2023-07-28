@@ -454,3 +454,171 @@ export class AppComponent {
   constructor() {}
 }
 ```
+
+## Directives
+
+basically the directives are use to modify and controll the structure of the dom
+there are three types of directives
+
+1. component directives => these are user defined directives it is similar as component with template
+2. structural directives => these attributes are use to manipulae the DOM
+3. attributal directives => these attribute are use to add the style to the app
+
+component are directives but with template
+
+### Component Directives :
+
+we can define the our own directives
+we can use directive attribute define our own directive
+
+example
+
+```ts
+@directive({
+  selector: "[directive-selector]",
+})
+export class directiveName {}
+```
+
+### Structural Directives
+
+[NOTE] : before every structural directive there we need to use **_"\*"_**
+ex. *ngIf, *ngFor etc.
+
+1. NgIf Directive
+   ngIf is structural directive that means it changes the dom on run time lets see how to use it
+   ex. :-
+
+**_step 1_**
+in html template the main changes are
+
+```html
+<p *ngIf="variableName"></p>
+// this will show the paragraph if variableName is true //
+<p *ngIf="functionWhichReturnsBoolean()"></p>
+//in here the we can call function also and single variable also which can return boolean
+```
+
+**_step 2_**
+in component.ts file
+
+```ts
+functionWhichReturnsBoolean(){
+  return true;
+}
+
+// OR
+
+let variableName = false;
+```
+
+the paraghtaph will appear when the variable name becomes true
+it is not hiding anywhere in the dom it is simply just not there
+
+- ng if with else condition
+  basically there is no direct directive to impliment the else condition so we can just use ngTemplate
+  example :-
+
+**_step 1_** :
+create a ng template and assign a local marker to it this will be act as the identity of the template
+
+ex.
+in html file
+
+```html
+<p *ngIf="variableName">containt</p>
+
+//ng template example is as follows
+<ng-template #anyName> contain // we can use any html code here </ng-template>
+// here # is called as local marker, we can assign any name as per our requirements.
+```
+
+to identify the ng-template we are using the local marker i.e. **_#_** sign and we can assign any name to it that should be unique
+
+**_step 2_** :
+include else in existing ng if
+
+```html
+<p *ngIf="variableName" ; else anyName></p>
+//her the to end the if statement we can use ; and after else keyword we can use the local identifier name
+```
+
+this will simply load the else part i.e. the template which we have defined whenever the else condition is get true;
+
+2. NgFor Directive
+   this is also a structural directive thats why we use \* as the prefix for it.
+
+- ng for is used for looping the html element or user defined component in the template
+
+steps to impliment :-
+**_step 1_** :
+we can add the ng for on the element or tag we want to loop
+syntax :-
+
+```html
+<p *ngFor="let element of ArrayDeclaredInComponentFile">containt2</p>
+```
+
+- getting index in ngFor
+  ex.
+
+```html
+<p *ngFor=" let element of anyArray ; let varaible = index">containt2</p>
+```
+
+in the above snippet the ; colon shows the end of the for loop expression
+[imp] the index is predifined keyword for the ngFor loop this will assign the index to the varible and we can acces it through accross the element
+
+### Attributal Directives
+
+this directives are only used to change the element they were placed on
+
+1. ngStyle attribute directive
+   it act as property binding
+   so the directive has to property binded to any property
+
+- syntax as follows
+  i. we can add ng style attribute on any html tag for styling
+  ii. this will provide us with the dynamic code which will help in dynamic styling
+
+**_step 1_** :
+in html template file
+
+```html
+<p [ngStyle]="{background-color : anyMethod()  or 'string' }"></p>
+```
+
+        in above example there are few points to consider
+        1. ng style is an attribute directive so it should be used in [ ] => it should be used as property binding
+        2. " "=>in double qoutes we can write any javascript as key value pair object (double quotes will consider as the value for the property)
+        3. we can assign object of key value pair as property to the ng style this can contain ternery expression or function which return strings or the strings
+        4. with value we can call any string or function from the component.ts file
+        5. string should be in single tick as shown in above example
+
+there is syntax to key also
+we can give it as 'background-color' or backgroundColor both are accepted but the first one contains **_-_** and thats why it should be in single qoutes **_' '_**.
+so basically key should be hypen sepreted - or can be camel case but with hypen sepreted key we should assign ' ' every time
+
+2. ng class attribute directive
+   this is also the attribute directive this also works as property binding
+
+so for this also has same syntax but differnt working
+
+example
+
+```html
+<li
+  [ngClass]="{
+    'text-success':person.country === 'UK',
+    'text-primary':person.country === 'USA',
+    'text-danger':person.country === 'HK'
+  }"
+>
+  {{ person.name }} ({{ person.country }})
+</li>
+```
+
+          in above example we can see that the basic syntax is same but only for class so
+          1. it can take multiple classes as keys which should have there own expression or function or string or js code as value
+          2. ng class will tell do we need to attach the css class to the element or not based on the function, expression, string etc.
+          3. it can add css class only a certain condition is true
