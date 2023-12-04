@@ -455,6 +455,8 @@ export class AppComponent {
 }
 ```
 
+[Examples Repo for data binding](https://github.com/shubhamJawale/DataBinding)
+
 ## Directives
 
 basically the directives are use to modify and controll the structure of the dom
@@ -622,3 +624,98 @@ example
           1. it can take multiple classes as keys which should have there own expression or function or string or js code as value
           2. ng class will tell do we need to attach the css class to the element or not based on the function, expression, string etc.
           3. it can add css class only a certain condition is true
+
+## Advanced topics
+
+### project Based on until now topics
+
+so for the basics we are learned until now  
+so project will basically contain following things
+
+- project planning
+  name of project :- Book shop
+
+- Features
+
+1. shopping list
+2. book read/article read/demo
+
+- Componenets with feature sorted
+
+1. Shoping list
+
+   1. shoping list
+   2. shoping list Edit
+
+2. Reading Section
+
+   1. Book List
+   2. Book Content/publication house/writer
+   3. Book Summary
+
+3. Models
+   1. Writers/publication Basic Book details
+   2. Book
+
+[Project Repo]('google.com')
+
+> Steps
+
+1. create project
+   to create the project we should us angular command line interface
+   so if we use shell commands  
+   for the basic details pre steps
+   1. go to the folder where you want to create project
+   2. click on the address bar of the file explorer and clear all and press 'cmd' to open the command prompt for that directory and then follow following steps
+
+to create the project we have basic command
+
+```shell
+  ng new ProjectName
+```
+
+in our case it would be BookSpace  
+so the command will be like
+
+```shell
+  ng new BookSpace
+```
+
+after this the CLI will Ask if you need angular router in project will need that in future so we will say yes by pressing y
+second question will be about the style sheet format it can be anything like css, scss etc. choose which one you are comfortable in.  
+we are choosing css.
+
+now it will take some time to get the project created
+
+after it press cd ProjectName in our Case press
+
+cd BookSpace
+
+once you are in the directory of project
+
+**optional**
+we are going to use the bootstrap for the project you can choose different css framework
+so to install the bootstrap in same directory we came by cd command
+so for that we use command
+
+```shell
+npm install --save bootstrap@3
+```
+
+this will install the dependancy and now we have to configure the bootstrap in our app
+
+press code . to open the project repo in the visual studio code
+
+first go to node modules folder in your app and find the bootstrap folder in it go to dist and then css find file ending with min.css copy the relative path by clicking right.
+go to the angular.json file in your project there we have styles array. in that array if there is any entry keep it as it is. by adding comma will ad the reletive path of the css file in the array (the path should be start from node_modules)
+example
+
+```js
+ "styles": [
+              "src/styles.css",
+              "node_modules/bootstrap/dist/css/bootstrap.min.css"
+            ],
+```
+
+so basic project creation is done
+in the component creation we need to add the basic components as header and navbar
