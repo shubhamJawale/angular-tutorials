@@ -719,3 +719,214 @@ example
 
 so basic project creation is done
 in the component creation we need to add the basic components as header and navbar
+
+[NOTE] See the project dir for additional info about project...
+
+## Debugging
+
+so to invoke basic debugging ;-
+open the devtools by clicking on inspect in browser
+now go to the sources tab then in soruces you can see many bundles
+inline.bundle
+or
+main.bundle
+this bundles are our typescript code compiled by angular so we can select main bundle
+search for the line or piece of code which you want to debugg once found click on the line number of the code
+it will automatically open the ts file for that logic
+now you have break point you just need to trigger it from ui then ui can have debugg menu at your hands
+
+this will be tidious task if you are working with lots of code to find the lines in heystack
+
+so now below you have **_webpack://_** in this you can expand and now you have folder structure files as you have in your project
+now you can open and add breakpoints anywhere you want
+
+## Advanced Component And DataBinding
+
+there are two types of custom data binding
+
+1. custom property binding :-
+   we pass data from the parent to child
+2. custom event binding
+   we pass data from child to parent
+
+### Custom property binding
+
+all the properties inside the components are only used in component not outside the component
+in property binding we pass the data from parent to child
+
+#### @Input() decorator :-
+
+In project repo we have seen everything but still we dont have way to pass the data through on component to another
+for example now we have two components 1. todo list and 2. todo task
+now we have the main app component which will have the data for the todo list in wich the todo list component will load and also have some buttons
+and the to do task component will be loaded in the todo list component so for this operations we need to pass the data from
+app component to list component and then from list component to todo task component
+
+Summary of the structure is as follows
+
+1. will have list of lists (list of task Lists)
+2. will have list of tasks
+3. individual task
+
+so first lets understand how we can pass the data
+
+the data is passed to components by using the @Input() decorative
+for example
+we have tasklist component as follows
+
+```ts
+// todo list component.ts
+@Component({
+  selector: "app-todo-list",
+  templateUrl: "./todo-list.component.html",
+  styleUrls: ["./todo-list.component.css"],
+})
+export class TodoListComponent {
+  listElements: Array<{ header: string; data: string }> = [
+    { header: "test 1", data: "list 1" },
+    { header: "test 2", data: "list 1" },
+  ];
+}
+```
+
+which has list of tags and we have html as
+
+```html
+<!-- todo list component.html -->
+<div class="container">
+  <app-todo-task *ngFor="let task of listElements"></app-todo-task>
+</div>
+```
+
+now we dont know how to pass the data to the app todo task component now the task component has basic structure as
+
+```html
+<!-- todo-task.html -->
+<div class="container">
+  <h6>{{ task?.header }}</h6>
+  <p>{{ task?.data }}</p>
+</div>
+```
+
+and component file of it as
+
+```ts
+//todo task component.ts
+import { Component, Input } from "@angular/core";
+
+@Component({
+  selector: "app-todo-task",
+  templateUrl: "./todo-task.component.html",
+  styleUrls: ["./todo-task.component.css"],
+})
+export class TodoTaskComponent {
+  task: { header: string; data: string };
+}
+```
+
+so now we have property task but it has no data; and also we need to pass the data from the list as task so how we can do that
+for that we need to use @input() decoration
+
+this decoration will be used to pass the data in components via properties.
+
+so in above snippets lets pass the task from task list to the task component
+
+so in component file of todo-task we need to add one import as Input from anglur/core
+
+will change the ts file to
+
+```ts
+// todo task component.ts
+import { Component, Input } from "@angular/core";
+
+@Component({
+  selector: "app-todo-task",
+  templateUrl: "./todo-task.component.html",
+  styleUrls: ["./todo-task.component.css"],
+})
+export class TodoTaskComponent {
+  @Input() task: { header: string; data: string }; // here we have added the task as @Input() so it can be available as property for this component which we can bind
+  // this is due to the rule that says all the properties declared in component are not accessible outside the component even though they are not private so to access them from another component we use the @Input() declaration
+}
+```
+
+now we can bind this task property in taskList component
+so in html template of the task-list component we can add as
+
+```html
+<!-- todo list component.html -->
+<div class="container">
+  <app-todo-task *ngFor="let taskElement of listElements" [task]="taskElement"></app-todo-task>
+</div>
+```
+
+we can give the spacific name to the input also so for that we have syntax as follows
+in task component file we can say that
+
+```ts
+// todo task component.ts
+ @Input('todoTask') task: { header: string; data: string }; // todoTask property is available publically to access along the components
+```
+
+example snippet for taskList html is as =>
+
+```html
+<!-- todo list component.html -->
+<div class="container">
+  <app-todo-task *ngFor="let taskElement of listElements" [todoTask]="taskElement"></app-todo-task>
+</div>
+```
+
+### Custom event binding
+
+basically in custom property binding we have passed the data from parent node to child node;
+
+but now we need to pass the data from child to parent so this will be done in following steps
+in child :-
+
+1. create events with EventEmmiter with data and also add the @Output() to make it accessible or emmit the data beyond the component
+   example :-
+
+```ts
+//chiild.component.ts
+@Output eventName : new EventEmitter<{data:"type of the event"}>
+
+//this method will be used emit the event
+emittTheEvent(){
+  this.eventName.emit({data:"anything You Cnn Pass As A type"})
+}
+
+```
+
+2. add method and html to emmit the event
+
+```html
+<!-- child.component.html -->
+<!-- added the method to emitt the event we just need to assign some thing to cause the event -->
+<button (click)="emittTheEvent()">Emit the event</button>
+<!-- on click of this button the event will be emited of type given -->
+```
+
+in parent :-
+
+1. add listener to read the event emmission
+
+```html
+<!-- in parent component.html -->
+<childComponent (eventName)=>"DoSomething($event)"></childComponent>
+<!-- here in child component we are listening to the custom event we have created -->
+<!-- with $event we are passing the event data to the method -->
+```
+
+2. add the method handle the event occurence
+
+```ts
+// parent.component.ts file
+// here we need to add the method to handle the evnet data
+
+doSomething(data : {data: "any data passed through event"}){
+  console.log(data.data);
+}
+```
+
+same @Input we can give the @Output() a parameter to act as the custom or different name than component property example **@Output('differntName')**
