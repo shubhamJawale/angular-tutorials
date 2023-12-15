@@ -541,8 +541,8 @@ to identify the ng-template we are using the local marker i.e. **_#_** sign and 
 include else in existing ng if
 
 ```html
-<p *ngIf="variableName" ; else anyName></p>
-//her the to end the if statement we can use ; and after else keyword we can use the local identifier name
+<p *ngIf="variableName ; else anyName "></p>
+//her the to end the if statement we can use ; and after else keyword we can use the local identifier name // remember the else part should be in double qoutes of ngIf
 ```
 
 this will simply load the else part i.e. the template which we have defined whenever the else condition is get true;
@@ -930,3 +930,257 @@ doSomething(data : {data: "any data passed through event"}){
 ```
 
 same @Input we can give the @Output() a parameter to act as the custom or different name than component property example **@Output('differntName')**
+
+DrawBack :-
+this can create problem to pass the data between sibling components
+this can create complex chains of data binding to pass the data between the siblings
+
+### View Encapsulation :-
+
+view encaspulation is basically applied to the css file which are limited to component it is applied.
+explaination :-
+basically the css dont understand the limit so it will applied to all child components of the component the css file is applied but angular encapsulates the view that means the css file is applied to the certain components so basically the angular creates it own encapuslation tags ex=> for <p> becames <p_somethingGivenByAngular> so this will apply the css to this paragraph only if we define any css to <p> in component css file.
+so there are ways to encapsulate the view :-
+
+in component.ts file
+in @Component() decoration we need add one property called as encspulation
+ex :
+
+```ts
+@Component({
+  selector :'',
+  templateUrl:'',
+  styleUrls :[],
+  encapsulation : ViewEncaspulation.Emulated // by defualt it is emulated that will apply view encapsulation
+// other option is none will remove view capsulation so the css will be applicable on all over the app
+// third option is ShadowDom
+   })
+```
+
+this will be usefull beacuase of the your css should be applicable to your component only
+
+### usning local refernce in templates
+
+so basically the local refernces can be used on any html element in that template.
+so the local refernces are used to reference the html elements in the template.
+the scope of the local reference is only available for that comppoent template.
+
+the local refernces can be defined in html tag by using #
+so the syntax as follows
+
+```html
+<input type="text" name="data" id="" class="m-1" placeholder="taskDetails" #InputData />
+<!-- by using # we can give name to local reference-->
+<input type="text" name="header" id="" class="m-1" placeholder="task name" #InputHeader />
+
+<!-- and with the local refernce has been set we can pass it to the method wich we are calling on button -->
+<button class="btn btn-primary m-2" (click)="addTask(InputHeader, InputData)"></button>
+```
+
+in above snippet we can see we have the syntax for the local refernce as **_#LocalReferneceName_**
+so the local reference now contains our html tag in above snippet that is input tag element so if we print the local reference
+then it will give us the same template code of the taf which we have assigned to local reference
+
+so now in component.ts file we can use the local refernce i.e our html tag as follows
+
+```ts
+// we are accepting the htmlInput elements for this method
+// we assigned input tags to local refernces in html template and passed them down to the method
+addTask(taskHeader: HTMLInputElement, taskData: HTMLInputElement) {
+  // console.log(taskHeader)
+    this.listElements?.push({ header: taskHeader.value, data: taskData.value });
+    // from tag input we need to get the value so we have written as above
+  }
+```
+
+note : - if we uncomment this part // console.log(taskHeader) in above snippet then the console will be written as => input type="text" name="header" id="" class="m-1" placeholder="task name" #InputHeader />
+so the basic understanding is local reference only attach the html tag to that local refernce name => for furter process we need to extract the data
+
+### @ViewChild() :-
+
+so basically we have seen local reference but until now we can just use them only if we pass them. but what if we need to access them in our code without passing to any method
+
+so lets gets to basics
+we can use the view child directive of the angular/core. it is used to configure the qurry.
+so basic syntax of the viewchild is as follows
+
+@viewChild('selector')
+or
+@ViewChild(ComponentName)
+
+so basically the viewchild will look for the first element or directive matching the selector in dom
+
+so basically we can use html tag as follows :-
+
+```html
+<input type="text" name="header" id="" class="m-1" placeholder="task name" #InputHeader />
+```
+
+so to access this local refernce we can use @ViewChild in our ts file
+
+as follows
+
+```ts
+  @ViewChild('InputHeader', {static:true}) inputHeader: ElementRef
+
+```
+
+from angular 8+ we use {static : true } if we are going to us it in ngOnInit else we set it as {static : false}
+from angular 9+ we only set as true not false it is by defualt false
+
+if we go like this it will not create problem from angular 9+ if we are not using it in ngOnInit()
+
+```ts
+  @ViewChild('InputHeader') inputHeader
+
+```
+
+so if we console log the serverContentInput then we can see the type of it as Element Ref
+this is the inbuilt angular type which is used to refer a html element as a object or type in angular
+
+so to make it more logical we can assign the type as follows
+
+```ts
+  @ViewChild('InputHeader') inputHeader: ElementRef
+```
+
+so basically we have reference to that tag element selector i.e. our local reference
+
+now we need to access the data of the elementRef
+
+so for that we have inbuilt property on ElementRef object as **nativeElement**
+so this property native Element will access the html native tag i.e input tag in our case
+
+so to access the data now we have access to native html tag so from it we can access the input text via **_.value_**
+as given below
+
+```ts
+this.inputHeader.nativeElement.value;
+```
+
+### ng-content directive in html template:-
+
+so basically now if we are building one component which is dependant on other then we use property binding (custom) to pass data from parent to child.
+so the there is alternative to it by using ng-content;
+
+it has basic syntax
+in parent html template
+
+```html
+<child-component-selctor>
+  <p>Any Data</p>
+</child-component-selector>
+```
+
+so in above snippet of parent html template the <p> tag is added between the opening and closing of the child component selector so by defualt angular will ignore the tag or multiple lines of code.
+but if we have to add this data in our child component then we can use ng-content
+
+in child component html template
+
+```html
+<h1>header</h1>
+<ng-content></ng-content>
+<h3>body</h3>
+```
+
+so the ng-content will inject the code between the header aand body in above snippet from the parent component html
+
+for real example
+
+```html
+<!-- parent template -->
+<child-component *ngFor="let anyVaribleName of ArrayName">
+  <p>{{anyVariableName.data}}</p>
+</child-component>
+```
+
+```html
+<!-- child html template -->
+<h1></h1>
+<ng-content></ng-content>
+<h3></h3>
+```
+
+the above parent component data will be reder at the place of ng-content
+
+summary : we can pass the data through
+
+1. custom property binding using @Input
+2. custom event binding using @Output
+3. using local refernces #localRefernceaName
+4. using @ViewChild and ElementRef
+5. using <ng-content>
+
+## Component LifeCycle
+
+there are 8 hooks related to the component lifecycle
+so basically from we excuting the code and angular rendering the code to destroy the code we have lifecycle of the component so it has phases so according to 8 hooks we can tap into this phases at any given point
+
+so
+note : for all hooks before adding them you need to impliment the hook to component class example as follow
+
+```ts
+@Component({})
+export class ComponentName implements OnChanges {
+  ngOnChanges() {}
+}
+```
+
+1. ngOnChanges : this hook is called after the input property changes that means if @Input property recieves any change from parent then the ngOnChanges hook get into action or get called
+   ng on changes hook recives a param of type SimpleChanges;
+
+as follows:
+
+```ts
+import {SimpleChange} from @angular/core
+ngOnChanges(changes : SimpleChange){}
+```
+
+if we console log the changes variable of type Simple changes
+it will print a object with the details of change happend on which @Input property and other details like changed value, is it first change or not, previous value etc.
+
+[NOTE]
+
+i. this is the only hook that takes parameter
+
+2. ngOnInit : this hook is called once the component is initialized basically when it rendered on screen. so the ngOnInit runs after the constructor
+   so the precedence is as constructor gets called and then ngOnInit is called
+
+3. ngDoCheck : this will call during any change detection run like button click event and all.
+   in devlopement mode the angular has one more check cycle.
+   there are couple of changes will trigger this method and event is called by clicking or any event.
+   (change detection check)
+   it is used in case only if angular doesn't pick any change so we have to tell angular
+
+4. ngAfterContentInit : this hook is called after the (ng-content) has been projected or inititalized in view
+
+5. ngAfterContentChecked : this hook is called every time the project content is checked for change
+
+6. ngAfterViewInit : this hooks is called after the component view (and the child view) has been initialized that means when the component template is properly rendered as view on screen.
+   basically the after view in it and ng on init has only one basic difference. ng on init works on component is initilized thats why it does not have the access to html templates or html elements but ng after view init is used then it has the access to html element and html templates because it works after view is initilized.
+7. ngAfterViewChecked : this hook is called every time the view (and the child view) has been checked
+8. ngOnDestory : this hook is called once the component is about to destroy i.e. before the destroy
+   example if any \*ngif code is going to destroyed then the ngOnDestroy hook is called same for component is going to exit from view then it is called.
+
+### @ContentChild :-
+
+so basically with @ViewChild we can access the reference of the child element of the template but if we inject any <ng-content> in html template then we dont have access to it cause the html template code is in another component so to get access to this content element refernce we use @ContentChild
+
+so basic syntax is also same as @ViewChild (for angular 8+ and 9+ also)
+
+```ts
+//  in child component.ts
+@ContentChild('selectorFromParentTemplateOfNgContent') nameOFVariable : ElementRef;
+```
+
+```html
+<!-- parent template html -->
+<child-component-selector><p #selectorFromParentTemplateOfNgContent>any code</p></child-component-selector>
+```
+
+```html
+<!-- child template html -->
+<p><ng-content></ng-content></p>
+```
+
+so now we can access the paragraph of the ng-content via @content child directive
