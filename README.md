@@ -300,6 +300,7 @@ syntax : - [property] = value to the property
 1. we can bind many properties from html elements
 2. also for directives and component we can bind the properties
 3. we use the angular cause it changes template (dom/rendered component at runtime) very easily
+4. if we are binding any string then the syntax should be as [property] = "'string'" and to avoid this we can simply us as property = 'string';
 
 **_when to use what?_**
 
@@ -1183,4 +1184,710 @@ so basic syntax is also same as @ViewChild (for angular 8+ and 9+ also)
 <p><ng-content></ng-content></p>
 ```
 
-so now we can access the paragraph of the ng-content via @content child directive
+so now we can access the paragraph of the ng-content via @content child directive.
+
+### userDefined Directive
+
+so basicallly we have two types of directives 1. structural ex. ngIf and ngFor 2. Attributal(style) which has 1 [ngClass] and [ngStyle] directives.
+now we can also create the directives as we want to change the element.
+
+so for that we are going to use @Directive() from angular core
+so basically the directive we can use in dom.
+
+so to create that we have basic syntax
+
+first we need to create a file for directive as
+
+directiveName.directive.ts as name we use .directive.ts
+now in file create a ts class with the camelCase naming example
+
+```ts
+export class NameOfTheDirective {}
+```
+
+so now add the @directive to the class
+
+```ts
+@Directive()
+export class NameOfTheDirective {}
+```
+
+@Directive will take object as configuration
+
+```ts
+@Directive({selector : "[nameOfTheDirectiveSlector]"}) // we are using selector as property selector cause we want to acces it as attribute of the element
+```
+
+now in class to access the element of the dom or tag of the dom we need to pass the element ref to the directive so we can have access to it
+
+in constructor of the class we pass the parameter for the ElementRef type of element reference.
+
+example
+
+```ts
+@Directive({ selector: "[nameOfTheDirectiveSlector]" })
+export class NameOfTheDirective implements onInit {
+  constructor(elementRef: ElementRef) {
+    // write code to access and change the behavoiur of the element for example as below
+    // elementRef.nativeElement.style.background = "orange"; // here we dont have basic access so we will use it on ngOnInit so our class will have the implimentation of onInit interface
+  }
+  ngOnInit() {
+    this.elementRef.nativeElement.style.background = "orange";
+  }
+}
+```
+
+and to inject this directive on any element of dom we need to add the directive in the module file
+in declarations array
+
+```html
+<p NameOfTheDirective></p>
+```
+
+we can create the directive by using angular cli
+
+```bash
+ng g d directiveName
+# or
+ng generate directive directiveName
+```
+
+drawbacks : this is not the best practice to use elementRefernce it can be valnaurable
+
+so to overcome this we need to use Renderer
+
+### Renderer
+
+so the renderer we can you use to show the best practice and not directly changing the dom
+
+so the basic syntax is same only the one param in costructor is added.
+
+```ts
+@Directive({ selector: "[nameOfTheDirectiveSlector]" })
+export class NameOfTheDirective implements onInit {
+  constructor(elementRef: ElementRef, renderer: Renderer2) {}
+  ngOnInit() {
+    // so basically renderer provides some basic in built methods to handle some scenarios like styling.
+    this.renderer.setStyle(elementRef.nativeElement, "background-color", "red"); // it also takes 4th param which are the renderer flags
+  }
+}
+```
+
+### @HostListner
+
+so basically to make the directive more interactive we can use hostlistener directive
+so with hostListner directive we can listen to the hosts event and make some changes on it so for example we can have the text change the colour when we hour over it or we can just make it tranperent as mouse leaves
+
+example of that is as follows
+
+```ts
+@Directive({ selector: "[nameOfTheDirectiveSlector]" })
+export class NameOfTheDirective implements onInit {
+  constructor(elementRef: ElementRef, renderer: Renderer2) {}
+
+  // so here we can hostlistner to two events
+  //1. mouseenter
+  //2. mouseleave
+  // so basically the syntax of the @hostlistener is as
+  // @HostListener('DOMEvent') methodName(eventData : Event){ code for excution}
+  // so in params of the hostlistner we can add the  dom events which are predifined
+  @HostListener("mouseenter") mouseOver(eventData: Event) {
+    this.renderer.setStyle(elementRef.nativeElement, "background-color", "red");
+  }
+
+  @HostListener("mouseLeave") mouseLeave(eventData: Event) {
+    this.renderer.setStyle(elementRef.nativeElement, "background-color", "transperent");
+  }
+
+  // we can bind the host listener to any event and also we can make use of eventData in case of custom event binding
+}
+```
+
+### @HostBinding
+
+so in above case we have used renderer but there is another way much simpler and easier to bind the event
+
+so in this case we use @HostBinding to bind with dom element property so the basic syntax is simple as
+
+@HostBinding('nameOfThePropertyWithProper') variableName : type = initialValue; and we can change this value on our events as follows
+
+```ts
+@Directive({ selector: "[nameOfTheDirectiveSlector]" })
+export class NameOfTheDirective implements onInit {
+  constructor(elementRef: ElementRef, renderer: Renderer2) {}
+  @HostBinding("style.backgroundColor") backgroundColor: string = "transperent";
+  // so basically here the dom element has style property on which the background color property exists but it should be in camalCase cause the dom knows it as in camelCase
+
+  @HostListener("mouseenter") mouseOver(eventData: Event) {
+    //now in here on the event occurs we can just change the property background color
+    this.backgroundColor = "red";
+  }
+
+  @HostListener("mouseLeave") mouseLeave(eventData: Event) {
+    this.backgroundColor = "transperent";
+  }
+}
+
+// with Hostbinding we can bind to any property the directive seeting on
+```
+
+so to understand lets make it more dynamic
+
+basically the custom property binding and custom event binding can be used in our custom directives
+so now we can see the example as
+
+```ts
+@Directive({ selector: "[nameOfTheDirectiveSlector]" })
+export class NameOfTheDirective implements onInit {
+  constructor(elementRef: ElementRef, renderer: Renderer2) {}
+  // lets add one property binding from outside
+
+  @Input() colorTohighlight: string = "red";
+
+  @HostBinding("style.backgroundColor") backgroundColor: string = "transperent";
+
+  @HostListener("mouseenter") mouseOver(eventData: Event) {
+    // access the Input property here
+    this.backgroundColor = this.colorTohighlight;
+  }
+
+  @HostListener("mouseLeave") mouseLeave(eventData: Event) {
+    this.backgroundColor = "transperent";
+  }
+}
+```
+
+in html of the parent where the directive is being used
+
+```html
+<p NameOfTheDirective [colorTohighlight]="'yellow'"></p>
+<!-- so basically the property is binded to yellow-->
+<!-- colorTohighlight is from the our custom directive -->
+```
+
+### custome structural directive
+
+for structural directive we use \*
+due to angular have the basic system awith only having string interpolation, property binding, event binding, two way binding
+so the basic working of the ngif block is as simple
+
+in html template
+
+```html
+<!-- ng-template is angular tag -->
+<!-- so if the condition is true then the ng-template code will appear on screen -->
+<!--so basically we are binding the ngIf property-->
+<ng-template [ngIf]="condition">some code</ng-template>
+```
+
+by using this understanding we can create our own structural directive
+
+so to use that we are going to use our custom directive approach
+create directive file .ts
+
+```ts
+@Directive({ selector: "[methodName]" })
+export class NameOfTheDirective implements onInit {
+  // now we have the basic directive we need to set the 1. the @Input condition method
+  // 2. we fill the constructor with params like what to add and where to add
+  constructor(
+    private templateRef: TemplateRef /*what to add giving refernce of template*/,
+    private vcRef: ViewContainerRef /*where to add giving the reference of view container*/ // so basically we can create the embededView of the template by using the template refernece as shown in method
+  ) {}
+
+  // here we have used set which will used to create or bind the method on @Input directive so when in our app the input property changes the method will get called
+  @Input() set methodName(condition: type) {
+    // code for the method how you want your structural directive to behave
+
+    this.vcRef.createEmbdedView(this.templateRef); // by this will inject the template into the view
+  }
+}
+// note the name of selctor for directive and the name of input property should be same
+```
+
+in html template we can use the structural directive as
+
+```html
+<div *methodName="conditon"></div>
+```
+
+so we can use it as the stuctural attribute
+
+### ng-switch
+
+this is another in-built structural directive
+it has basic syntax as shown below
+
+```html
+<div [ngSwitch]="value">
+  <!-- here we add the ngSwitch as property to which we pass our value or case value -->
+  <p *switchCase="anyCaseValue"></p>
+  <p *switchCase="another case"></p>
+  <!-- so bascially we use the *switchCase to bind the switch cases -->
+</div>
+```
+
+and in component.ts code we just use
+
+```ts
+value = "the value which we are going to use to switch between cases";
+```
+
+// if we are going to use many if blocks then this structural directives will come in handy
+
+## Services and Dependancy Injection
+
+Services are basically use for central buisness logic processing
+
+the services can store the data centrally and some buisness logic which we can use centrally
+so there is basically syntax which bound with functionality of the service
+
+there is two ways to create the service :-
+
+1. by angular cli
+2. by manually
+
+so
+
+1. by using angular cli
+
+```bash
+# we can use the ng g service or ng g s  to create service
+ng generate service ServiceName
+#or
+ng g s ServiceName
+```
+
+so this will create one service file
+
+2. manual creation of the service :-
+
+and to create manually we have to create simple typeScript class with the name of the service basically there are multiple rules for it.
+
+example :-
+
+```ts
+export class ServiceName {}
+// this will generate your service.
+```
+
+so basically we have service so we can have the basic buisness logic in here.
+
+now we can use these service in components of our app to use this in our component apps
+
+we can use providers property of @Component directive of angular
+
+so the basic change in component where we want use the service is as follows
+
+```ts
+@Component({
+  ...
+  providers :[ServiceName]
+})
+export class ComponentName{
+  // and in component constructor we can add the service name and the service variable
+  constructor(private serviceNameVariable : ServiceName){}
+  // now we can use the service in the component
+}
+```
+
+so basically service injection takes place in the hierarchical order in the angular.
+
+### **_Hierarchical Injector_** :-
+
+in simple language basically there are three types of it
+
+1. App Level dependancy injection
+   in this dependancy injection we use the @Module Directives provider property
+
+   so the syntax is as follows :
+
+   ```ts
+   @Module({
+    ...
+    providers : [ServiceName]
+   })
+   export class appModule {}
+   ```
+
+   due to we are configuring the injection in the modele thus it will be available throught the globally or for the module scope
+   so there is one catch :-
+   if we do configure it in module class and same service we provide to component provedrs property this will create the two instances onw at global scope and other one is at the component level scope so first gloabal scope service dependancy will be overwritten by the component level dependancy
+
+2. Component level Injection
+   in component level injection we provide the dependancy at @Component directive in provider property then it will be usefull in every child component of the component.
+3. Leaf Component Level Injection
+   so basically at leaf component which doesn't have any child. and we provide the dependancy in that components provider property so it will be available for only that component
+
+basically this is how the hierarchycal injection works so there are other ways to declare the dependancy also
+we can use @Injectable({providedIn:root}) => this will configure the scope of the dependncy by providedIn property so here we have said the root so this will be available at root level so at module level so we dont need to add or provide the dependancy at in the providers property array of the module
+
+### Injecting property into other property
+
+so basically when we use one dependancy of the property into other then on the top of the service class we use @Injectable directive
+
+example :
+
+```ts
+
+@Injectable({providedIn: root})
+export claass ServiceName{
+  contructor(private otherService: OtherServiceName){}
+}
+
+```
+
+so basically we use @Injectable in two cases
+
+1. when other dependancy we are going to inject in our service in this case we are telling the angular that the service can injectable in this service
+2. when we are going to inject the service at global scope with the proper syntax or providedIn Property
+
+basically we can emmit the events and other data from the services this will make the working of the app easier and will cutoff the most chains of the data binding in app
+
+### Routing module :
+
+angular provides basic routing module so we can switvh between pages without refreshing the whole app
+so there are few steps to create routes
+as follows
+
+so basically to configure the routes we need to first spacify the routes
+
+so basically to spacify the routs it be as follows
+
+```ts
+// we will define the array of routs with object
+// the basic routs should contain two thing first is path and second is component
+
+// so example as
+const appRoutes: Routes /* this should be imported from angular core*/ = [
+  { path: "", component: HomeComponent },
+  { path: "users", component: UserComponent },
+];
+
+// so this will part of configuration should in any constant file or in module.ts file above the module decorative and outside the class and module decorative
+```
+
+second steps is to register the routes in our angular app
+
+there are many ways but the one way to register the routes are as follows :-
+in our module.ts file
+
+in directive we need to add one module in imports array
+RouterModule
+but this router module has one method called as for roots this method will assigne any routes to root
+like localhost:4200/users so here localhost:4200 is root
+as follows we can register our routs
+
+```ts
+// we can declare the routes here also at this very top outside class and decorative
+@NgModule({
+  imports: [
+    RouterModule.forRoot(appRoutes), // so here app routes we can declare above ng module in same file or declare in constant file and import here
+  ],
+})
+class appModule {}
+```
+
+now we have to add the spacific place where should routs loaded we have registered routes but not used any where
+so to use or add the routes to be loaded in our component we should use following tag in our html template where we want to load the routs
+so we can use the router outlet directive
+<router-outlet></router-outlet>
+
+so now one step is remained to laod the routs is when to load ;
+so to solve this proble we can use one property directive i.e. routerLink on a tag of our html template to give the link of our path so we can use it as below
+
+```html
+<button><a routerLink="/FullPath"></a></button>
+<!-- or we can use it as property binding simple syntax also -->
+<button><a [routerLink]="'users'"></a></button>
+<!-- here we have given single qoutes cause it will take it as string  else it will find it in our components file for users or file path varible we defining-->
+<button><a [routerLink]="['/pathSegment1', '/path segement 2']"></a></button>
+<!-- we can use it as this also so this array will take the segments of the paths of our path we have defined -->
+```
+
+so basically there are few rules to this routlink we are adding
+we can say that when how we use routlink will change its beahvaiour
+
+if we use routelink and give it a value as '/absolutePath' then it is going to load the absolute path
+but if we give 'relative path' then this will give us the relative path exmapke if the parent compoent path will get appended with our relatife path example we give like routerLink = 'first' and use this same path in users component then the path will users/first but if we use it as routerLink = '/first' then path will be /first
+
+**_styling the routerLink_**
+
+so if we have some buttons that should be seen style change when clicked
+thus for that we can use
+RouterLinkActive Directive it will apply given css class once the link is active
+
+example :-
+
+```html
+<li routerLinkActive="CssClass"></li>
+<!-- this will give the class style when the link is active  -->
+```
+
+also it has one mmore class to configure the routerLinkActive directive this configuration directive is used because the router link active directive will remain active on substrings of path like if we have localhost:4200/home and localhost:4200/ so the link will be active in both scenarios cause localhost:4200/ is common in both so we use routerLinkActiveOptions directive which take javascript object
+
+example
+
+```html
+<li [routerLinkActiveOption]="{exact:true}"></li>
+```
+
+using routes programmatically
+
+so basically if we are going to use this with some logice then we can use it as follows
+
+```ts
+@Component()
+export class ComponentName {
+  constructor(private router: Router) {} // this will be imported from @angular/router
+
+  methodForAnyEvent() {
+    //calculations you want
+    this.router.navigate(["/pathToNavigate"]); //we have navigate method for it to navigate to spacific path
+  }
+}
+```
+
+using the relataive paths :-
+so basically we have seen that in above navigate method we have used [] array
+and we can pass the 'pathToNavigate' this will append this string to current component path in case of routerLink scenario but this will not work in case of the navigate method.
+cause navigate method does not have the information about the relative path so to pass the relative path we use another property of router ActivatedRoute
+as follows :=>
+
+```ts
+@Component()
+export class ComponentName {
+  constructor(private router: Router, route: ActivatedRoute) {} // this both will be imported from @angular/router
+
+  methodForAnyEvent() {
+    //calculations you want
+    this.router.navigate(["pathToNavigate"], { realtiveTo: this.route }); //we have navigate method for it to navigate to spacific path
+    // this will append the pathToNavigate to the relative path of the component which on the method excution is open
+  }
+}
+```
+
+**_path query params_**
+
+so to declare the route with params we should use following syntax
+
+```ts
+const routes: Routes = [{ path = "/home/:param1/:param2", component = "home" }]; // : this will tell the angular that this data will be dynamic
+```
+
+// this will be the routes we declare
+
+so we need to fetch the params in our code
+so when we pass the params and the home component is open the dyanamic params are passed from another component to the path
+so now we can fetch them in the home component so to fetch them we can use following syntax
+
+```ts
+// class of the component
+
+// now in the costructor
+constructor(private route : ActivatedRoute){
+
+}// import activated route from @angular/routes
+
+//now we have the paramas so we can use them on when the component is initialized
+
+// so we can use ngOnInit Method
+param1 : any;
+param2 : any;
+ngOnInit(){
+  this.param1 = route.snapshot/*this is the property on route which gives us the access on the params of the query path*/.params['param1'];
+  this.param2= route.snapshot.params['param2'];
+
+}
+// so as with activated route and snapshot we can have access to params
+```
+
+but there are certain limitations to the data in above case so we have snapshots and that snapshots get created once when the component is newly rendered
+but in the case of the updated data and component is already loaded on the screen in this scenario the path will be updated but the data on the template is not
+so to overcome this we need to use another approach to update the data
+so we are going to use route.params method directly without snapshot so basically params is obsarvable
+will see the obsarvable in next section but still for understaning
+**_observable_**
+observables are the events we are monitering to change or update or occure so when ithis events occure we can subscribe to it that means if the events occurs then we can add some code which will run on that event occuring this is the async programming basically it is third party library but angular depends on it heavily
+
+so it has to work as follows
+
+```ts
+// class of the component
+
+
+constructor(private route : ActivatedRoute){
+
+}/
+param1 : any;
+param2 : any;
+ngOnInit(){
+ this.param1 = ,this.route.snapshot.params['param1'];
+ this.param2= this.route.snapshot.params['param2'];
+
+ this.route.params.subscribe(// this method wil take call back as param
+ (params : Params)=>{
+   this.param1 = params['param1']; // so like this we can assign the changed param value to our local component property
+ })// need to import params from angular/route
+}
+// so as with activated route and snapshot we can have access to params
+```
+
+this approach will be helpfull in scenario when we reload component with itself with changed data
+
+note imp :-
+
+the subscription we have initialised will remain in memory even though the component is destoryed so we need to unsubscribe it we can unsubscribe it use unsubscribe method
+
+example as follows :
+
+```ts
+// we will declare one variable as
+
+subscriptionToData: Subscription; // this subScription should imported from rxjs/Subscription
+// rxjs is not angular package but angular uses it;
+// assign the subscribtion to the variable
+this.subsricptionToData = this.route.params.subscribe((params: Params) => {
+  this.param1 = params["param1"];
+});
+
+// so we need to destroy it
+
+// so on destroy lifecycle hook will unsubscribe
+ngOnDestory(){
+  this.subscriptionToData.unsSubscribe();
+}
+```
+
+will learn the observable later in this tutorial
+
+**_querry params_**
+so basically querry params are used in the forms of as after the question mark ? i.e like path/someOperation?limit=1000&OffSet=0#fragment
+so the query params are directly assigne to the url and fragment will be used after #
+
+so to use this in template we have some property like queryParams and fragment which can be used as follows
+
+```html
+<a [routerLink]="[path, queryHeading]" [querryparameter]="{qParam1 : 'anythingWeCanAssign'}" fragment="loading"></a>
+```
+
+so access this dynamically or pass them as dynamically we can use following syntax
+
+so as we have seen above in
+component.ts file
+
+```ts
+methodOnEvent(paramToPass){
+  this.route/*this waill be of type Router imported and added in constructor*/.navigate(["/path"], /*to pass the querry params we can use the querryParams  object and to pass the fragments we can use the framgments object */
+  {
+    // this both should be in same object
+    queryParams :{
+    qparam1: "anything"
+  }
+  fragment : "anything"
+  }
+  )// this method we have seen above to navigate some path programatically
+}
+```
+
+we can retreive data as same as params but just the method will be changed as qurryParams
+example
+
+```ts
+this.route.snapshot.queryParams["key"];
+this.route.snapshot.fragment;
+
+this.route.queryParams.subscribe();
+this.route.fragment.subscribe();
+```
+
+Child routing :-
+
+so basically we can nest routes for better code implimanntation and reusability also
+
+so we can declare routes as
+
+```ts
+const routes: Routes = [{ path: "/parentPath", component: ParnetComponent, children: [{ path: "Children", component: ChildrenComponent }] }];
+```
+
+so the path of children will be /parentPath/Children
+
+but there should be also the place to laod the child component ion parent component template
+i.e there should be router-outlet tag where the children component should be loaded present in the parent component
+
+addditional information:
+
+on our navigate method we have some properties as queryParamsHandling this will give us options like merge and preserve preserve will preserve old ones on the new one and merge will be merge both urls
+
+```ts
+routee /*this will be ActivetedRoute*/
+  .navigate(["path"], { relativeTo: this.route, queryParamsHandling: "merge" }); //this will merge both urls
+```
+
+now the basics of not found and redirection
+
+so basically we have property RedirectTo on the path while declaring it
+example
+
+```ts
+const path: Routes = [{ path: "something", redirectTo: "/existingPath" }];
+```
+
+wildcard routes :-
+there is one wild card route as double ashstrick that is as \*\*
+thus the wild card route used to spacify the routes that are not in your routes and redirect it to 404
+so lets think about it
+to configure the wild card route the position where you declare the wild card path
+so we can declare them as
+
+{path : "\*\*" , component : notFoundComponent}
+
+so the paths will be below the all paths of your app cause if it is above the all paths or above any path this path will get rendered on that path also which is below this wild card path
+
+#### outsourcing routes
+
+app.routiing.module.ts => this file is created in the app if we choose routing option to yes when we create new project.
+
+so this file is simple module class with directive as @Module here we have to declare paths above the @ngModule And the class
+also we need to add the extra exports property in the @Module and this property will contains the array of exporting modules which can be used
+so basically we have same structure as follows
+
+```ts
+// routing moduleClass
+const paths : Routes = [{path : "anyPath", component : anyComponent }]
+@Module({
+imports : [RouterModule.forRoot(paths)]
+exports :[RouterModule]
+})
+class AppRouterModule{}
+```
+
+now we need to imports this appRouterModule in app module class
+
+```ts
+@Module({
+  imports: [AppRouterModule]
+})
+```
+
+#### route gaurds:-
+
+so to gaurd the our urls we need to use the can active interfaces on our Servive which we are using for auth gaurd.
+
+1. canActivate interface =>
+   this method will return boolean i.e will show that the canActive interface will show or reflect the when to activet the path or not based on your authentication strategy
+
+oncer the method is implimented also we need implement the interface to the service
+
+then we can use property canActivate with path declaration
+ex. {path : "something", component : "something" canActivate : [serviceName]}
+
+2. canActivateChild interface =>
+   this is similar to can activate just need to use this canActivated keyword instead and impliment the method in service and in path use canActivateChild on path declaration of the parent so it will take effect on the path child activation control
+
+both will just add control to get to the link or not
+
+3.  can deactivate gaurd
+
+will need to add details here after few days will skip it for now
