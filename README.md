@@ -1891,3 +1891,131 @@ both will just add control to get to the link or not
 3.  can deactivate gaurd
 
 will need to add details here after few days will skip it for now
+
+
+## Observables :-
+- observable is basically a various data sources like user input, http request, events, triggered in code etc.
+- there is observable and observer so observer will observ for the data changes and can handle three stages
+   1. handle data
+   2. handle error  
+   3. handle completion.
+- observable pattern is used to handle the async data.
+- the data which can be block the excution flow can perform while excuting next lines are called as async
+steps to add observable pattern 
+1. install rxjs
+   ```bash
+   npm install --save rxjs
+   ```
+   optional in addition you can install rxjs-compat package also
+
+   ```bash
+   npm install --save rxjs-compat
+   ```
+
+
+so basically we have subscribe before in many codes snippets to params and all;
+so basically when we subscribe to any event it act as listener to the event.
+so basically we need to set the observer in some cases or just need to add the listener for the certain evenets
+
+but there is a catch we can listen to any event with the help of the subscribe method.
+so this method will listen to the data changes or events then it will excute the code we have provided it
+
+but we need to unsubscribe the custome subriptions cause when the subscription get called it will get triggered multiple times whenever triggering will occure
+it will create multiple instance of subscriptions
+ so to avoid this unsubscribe each and every subscription
+ except the angular will handles its own in built provided subscriptions unsubscription.
+
+ ### Custome observable :-
+
+ so to create the basic obseravable we need to use Obseravable 
+
+ example 
+ ```ts
+ const customeIntervalObservable = Observable.create(observer => {
+  // so basically create method takes arrow function as param
+  // and the arrow function can take the observer that is automatically provided by the rxjs as param
+  // any code that will inform the observer about the changes 
+  let count =0;
+  setInterval(()=>{
+    observer.next(count); // here we can provide any method like error and complete to show the observer that there is error and there is a completion of operation
+    // here we are having the next method which will show us the next data change if count will get change then observer will pickup the change.
+    count++;
+  // increasing count to change the data so our next method will informed by the observer
+  }, 1000)
+ })
+ ```
+
+ now we need to subscribe to the obervable so we can do anything when the data get changed
+
+ ```ts
+ let subscriptionDemo : Subscription = customeIntervalObservable.subscribe(data=>{
+  console.log(data);
+  // observer will pass the changed data here
+ })
+ ```
+we need to unsubscribe 
+
+```ts
+subscriptionDemo.unsubscribe();
+```
+
+in subsribe method we can pass multiple arguments as 
+
+```ts
+something.subscribe(data=>{}, error => {})
+```
+note :- in the observer if completion occurs after the error then it will never get called the error will always get called
+on error obervable dies.
+
+
+#### Operators :-
+basically operators in rxjs are used to tap in the data before subscription. that means we can change the data emmitted from the observable and we can change or transform, filter the data before the subscription
+then we can subscribe 
+so to tap in the data before subscription we use pipe method on observable, any observable.
+so the basic syntax will be as follows
+```ts
+let newObservable = Observable.create(observer => {
+  observer.next(data)// this will create the new observable and with next method we can pass the data to the observer
+})
+
+// so now we have to tap into the data before subscription
+newObservable.pipe(operator((data)=>{
+  //any operation
+  // here data will be changed befor the subscription
+})).subscribe((data)=>{
+  //any operation
+})
+```
+there are many operators you can search for operators list on the internet.
+
+#### Subject :-
+
+so technalcaly take a example of one event if any button clicked on a child component and we need to add the some thing like paragraph into the parent component after the button is clicked so we will create the event emmitter then will emmit event once we clicked the button also we will subscribe to that event once it is changed and then will show the data on parent component. so this was the traditional way now we need to change this with more technical way so in this way it will act same as event emmiter but there is very small change between observable and subject => we cannot have the basic syntax to tap into some observable with next method but with subject we can do that 
+so thats why we use the subject 
+
+
+so lets take an example how to use the subject 
+
+```ts 
+//in  any service file 
+// will create the subject that will accessable through the service
+let eventEmmiter = new Subject();
+
+// child component ts file 
+// we need to emmit the event
+
+onActivate(){
+  this.serviceName.eventEmmiter.next(true); // you can pass the data to subject also
+// so basically here we are giving the subject the value that should be given 
+}
+//in template file of child
+// <button (click)='onActivate'>
+
+
+// parent component file
+
+this.serviceName.subscribe(data => {
+  console.log(data);
+  // or any operation you can do
+})
+```
