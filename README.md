@@ -2019,3 +2019,479 @@ this.serviceName.subscribe(data => {
   // or any operation you can do
 })
 ```
+
+## Forms:-
+angular provides the best apporach to handle the forms.
+there are two approaches :-
+1. template driven forms
+2. reactive forms
+
+
+
+### Template driven forms:-
+template driven form are the forms provided by the angular in which each and every details of the forms is derived from the html template
+
+so to use this approach we used 
+
+
+angular provide ***FormsModule*** this module is provided by angular
+
+this will be provided in app.module.ts in imports array property
+
+
+now in template we have form as below
+
+```html
+<form>
+<input type = "text" class= "formController"/>
+<button  type = "submit" class= "formController"></button>
+</form>
+
+```
+
+
+basically angular will convert this form into a json object 
+
+now basically we need to tell the angular which are the inputs and formcontrollers so we can get the json object as it is
+```JSON
+{
+  value : {
+    // properties from form
+  }
+// this will contain more properties regarding form like if form is valid the valid : true similarly it may contain more properties 
+}
+```
+
+so to tell the angular which are the input values in the template we use ***ngModel*** and ***name*** property of the html tag as below
+```html
+<input type = "text" class= "formController" ngModel name = "nameOfTheInputTag"/>
+<!-- we use ng model and name tag as above we can use ngmodel and name in any form related tags -->
+<button  type = "submit" class= "formController">Submit</button>
+```
+
+now we can have the angular to know which are the input fields
+
+so next step will be to submit the form 
+so in our form there is button with type submit and this type will trigger defualt event of js and html that is submit event 
+
+so on form tag of html we have to capture this event
+so to capture the submit event on form the angular provide one event that is ngSubmit
+```html
+
+<form (ngSubmit)="Method()">
+```
+
+but this method will not have any contaxt about the  form so we can create the local refernce of the form and pass it to the method
+
+```html
+
+<form (ngSubmit)="Method(localRefenceForTheForm)" #localRefenceForTheForm = "ngForm">
+<!-- so now we have the basic form object passed to the method -->
+<!-- also we need to pass the ngForm or tell angular this localrefence is of type ngForm -->
+```
+now we need to retrieve the form data
+
+
+now in component.ts we have to retrieve the data as below
+
+```ts
+
+Method(form : NgForm){
+// now we have the local refence of the ngForm now we can extract the value  
+
+
+console.log(form.value);
+// in this way we have the object on submit button click as 
+/*
+{
+ nameOfTheInputTag = "value provided in input box" 
+}
+*/
+}
+```
+
+
+so now we have the basic traditiional way of passing data from form
+but there is another approach in which we can use the local refence  and viewchild in that scenario we should not pass the data through the  method params
+
+so it will like as 
+html template will be like this
+```html
+<form (ngSubmit)="Method()" #localRefenceForTheForm = "ngForm">
+```
+
+
+```ts
+@ViewChild("localRefenceForTheForm") formData : NgForm;
+Method(){
+console.log(formData.value);
+}
+```
+this will be also considered apporach for the form submission
+
+we can also use multiple validators 
+from angular on directly on the html tag
+
+example 
+
+```html
+<input type= "email" name="email" ngModel email>
+<!-- here we have added email attribute this validator are provided by the angular -->
+<!-- https://angular.io/api/forms/Validators this is the link for angular validators -->
+```
+
+
+we can use ngForm objects few methods to apply css so when form loads we can have few classes added to the tag like dirty valid notValid like this we can direct tap to that classes for css 
+ex 
+```css
+.notValid{
+  //css code
+}
+```
+
+
+
+so there is also one case where we can use the forms local refenrence at our is to access the properties of ngform object 
+
+so we are going to disaable the button if form is not valid
+
+
+```html
+<button type = "submit" [disabled] = !localRefernceForForm.valid ></button>
+```
+so in above snippet we can see we have tappped on to the object of ng form and used valid property
+
+
+so basically there is a way in which we can controll spacific form controll of the inputs in the form
+for example
+
+```html
+<input type= "email" name="email" ngModel email #email="ngModel">
+<!-- to access this we need to add the local refernce to that input -->
+<!-- so no we can access it with localreference -->
+<p *ngIf ="!email.valid">Enter a valid Email</p>
+```
+
+
+#### form group:-
+in the form if we want to group some date then we can add one div or anything and will use the 'ngModelGroup'  in the tag
+and also we can  add the local refernce to it if need to access the perticular form group
+```html
+<div ngModelGroup="groupName" #localReference="ngModelGroup">
+  ..suppose here are two input tags for name and email
+</div>
+```
+
+so the object will be as
+```JSON
+{.
+ .
+ .
+ .
+  value:{
+    groupName : {
+      name : "",
+      email:""
+      }
+  } 
+}
+
+
+```
+
+
+#### setValue and patchValue :-
+so basically what if we have to form progamitcally for some inputs that should reflect on the ui  so basically we use two methods to set the form values that are setvalue and patchvalue 
+so both are functions same as shown below
+
+```ts
+@ViewChild("LocalReferenceOfTheForm") formData : NgForm;
+
+
+this.formData.setValue({
+  //exact same object as structure of the form
+  // this method will overide all values on ui even if they are field by user
+})
+// so to overcome this issue we can patch the perticular value and the data on the form
+// with help of patchValue
+this.formData.form.patchValue({
+  //perticular property or only the property which is used
+  //example as 
+  email : "any value"
+  // so only email will get overriden
+})
+```
+
+we can reset the forms as below
+
+```ts
+@ViewChild("LocalReferenceOfTheForm") formData : NgForm;
+onSubmitMethod(){
+formData.reset();
+//by using reset will reset the form
+}
+```
+
+### Reactive approach :- 
+this is programatic approach this needs to be the synchronised apporch between form and ts code
+
+
+so to first we need to add one module into the module files imports array that is
+
+***ReactiveFormsModule***
+
+so after importing that we need to create the form in ts file
+
+
+```ts
+signupForm : FormGroup;
+
+// so we can init this in ngOnInit
+
+ngOnInit(){
+  this.signupForm = new FormGroup({
+    'username' = new FormControl('defualt value'); 
+    'email' = new FormControl('default value');
+    // FormCotrol takes three arguments 1. default value 2. validator and 3. async validator
+  })
+}
+```
+so now in the html template we need to create the basic template
+
+```html
+<form [formGroup] = "signupForm" (ngOnSubmit)= "onSubmit()">
+  <!-- so basically we are configuring or syncing form with the typescript code  -->
+  <!-- with formgroup we are property binding the value of form we created in the component class -->
+  <!-- also we are binding on submit event but likely in the template driven we need to pass the local reference to method like that we dont need to pass the reference -->
+  <input type="text"  formControlName = "username"></input>
+  <!-- basically here we have to property bind for string the syntax will be as [formControlName] = "'username'"-->
+  <!-- to avoid such complication we can just use as above we are binding username form control which we have created with exact same name in the ts file will used we bind the input to username -->
+    <input type="email"  formControlName = "email"></input>
+    <button type= "submit">submit</button>
+</form>
+
+```
+
+now both are synced with each other now we can use the data on submit directly
+
+as 
+```ts
+this.signupForm.value;
+```
+
+
+#### validation :-
+In the reactive approach we can not put the validation in the template 
+so we have the object where we declare the formController takes second parameter as validator.
+```ts
+signupForm : FormGroup;
+
+// so we can init this in ngOnInit
+
+ngOnInit(){
+  this.signupForm = new FormGroup({
+    'username' = new FormControl('defualt value', validators.required); 
+    // here the second parameteer takes validators class the other methods also we can provide multiple validators also as an array for second array
+    'email' = new FormControl('default value',[validators.required, validators.email]);
+    // FormCotrol takes three arguments 1. default value 2. validator and 3. async validator
+  })
+}
+```
+#### getting access to the form controls so basically
+
+so like the template driven technique we can not use the local reference to access the form controls
+so we need to use the get method on form refernece
+
+
+```html
+<form [formGroup]= "signupForm" (ngOnSubmit)="onSubmit()">
+<input type = "text" formControllerName = "userName">
+<p *ngIf= "!signupForm.get('userName').valid"></p>
+<!-- this get method will take exact the path or string of the nested formcontrol -->
+<button type = "submit" >submit</button>
+</form>
+
+```
+
+
+also we can add multiple nested formgroups in form
+
+so to do that we can say as follow
+
+in component file
+
+```ts
+signupForm : FormGroup;
+
+ngOnInit(){
+  this.signupForm = new FormGroup({
+    'userData' = new FormGroup({
+       'username' = new FormControl('defualt value'); 
+      'email' = new FormControl('default value');
+    })
+   
+    })
+}
+```
+```html
+<form [formGroup] = "signupForm" (ngOnSubmit)= "onSubmit()">
+  <div formGroupName= "userData">
+ <input type="text"  formControlName = "uderData.username"></input>// full nested path
+    <input type="email"  formControlName = "email"></input>
+    <button type= "submit">submit</button>
+    </div>
+</form>
+
+```
+
+as above we can have nested from group
+
+
+#### form -Array
+if there is need to add the array for some thing for example hobbies 
+now if we need the structure like this 
+
+hobbies : ['value1', 'value2']
+
+
+lets take this example and work around it to explain
+
+first we need to add button which will be in div of formArray
+
+```html
+ <div formArrayName="hobbies">
+  <!-- this will be the name which will be used as refernce in the form or component.ts file -->
+          <h4>Your Hobbies</h4>
+          <button
+            class="btn btn-default"
+            type="button"
+            (click)="onAddHobby()">Add Hobby</button>
+          <div
+            class="form-group"
+            *ngFor="let hobbyControl of hobbyControls; let i = index">
+            <input type="text" class="form-control" [formControlName]="i">
+          </div>
+        </div>
+```
+
+
+now fetch the controlles in the onAddHobby() method and push the new controlles one by one into it if clicked a button like if clicked once one text box will apear if we clicked twice two click boxes will apear
+
+```ts
+  onAddHobby() {
+    const control = new FormControl(null, Validators.required);
+    (<FormArray>this.signupForm.get('hobbies')).push(control);
+  }
+```
+
+
+
+#### Custome Validation for any inputs
+ we can add the custome validation to the any form control
+ it is very simple we can just add the method in ts file pass it a control and then will add the necessary condition but just one rule to remember if the the validation has true condition in which ccase the validation should return true like this is valid then it should return null or nothing
+
+ ```ts
+  this.signupForm = new FormGroup({
+      userData: new FormGroup({
+        username: new FormControl(null, [
+          Validators.required,
+          this.forbiddenNames.bind(this),// there is one error regarding the this keyword which is not passing properly due to the default behavior of the javascript so we had to bind this to validator by calling the validator we should  call the only method name not the parenthesis
+        ]),
+      });})
+  forbiddenUsernames = ['Chris', 'Anna'];
+
+  forbiddenNames(control: FormControl): { [s: string]: boolean } {
+    if (this.forbiddenUsernames.indexOf(control.value) !== -1) {
+      return { nameIsForbidden: true };// this will be the error code this will be present in the form controller and there will controls property under the controles there will b a new property named as error codes then this will be there in the array
+    }
+    return null; // in this case the validation will be valid to pass so we are returning null
+  }
+ ```
+
+ #### Error codes :-
+
+
+ the error codes are in the form array that we have build up and there is one property of controls and in that property we array of the errors so from this error codes we can add validation or use in our code to make our code more usefull
+
+  
+
+ ## Pipes
+
+ pipes are basically used to change or the transform output
+
+ one we have seen before is the method that transforms the output before the subscribe but there is one more apporach in pipes that we can create custom pipes that can change the template representations
+
+ so basically there are few examples we need to take to understand
+
+ ```html
+ {{ server.instanceType | uppercase }} 
+ <!-- here this is the string interpolation for the server.instanceType and | => pipe adds the transformation method now here we have uppercase this method will use to upper case the instance type so this uppercase pipe is inbuilt functionality-->
+ ```
+
+
+ so this will transform the server instanceType into upperCase
+ there are multiple inbuilt pipes that we can use in template that can be found on angular docs
+  there is another way also to configure our own pipe we need to use 
+  the cli to create the pipe
+  to create pipe we need to use this command
+
+  ```shell
+  ng c p pipeName 
+  ```
+
+  this will creeate the pipe for the application
+
+  and in that we can use the format 
+  as below 
+  ``` ts
+  import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({// need to use this decorative to create the pipe
+  name: 'filter',
+  pure: false // this will be used to refresh the pipe on each input change this will cause the perfomance issue
+})
+export class FilterPipe implements PipeTransform {// need to import the pipeTransfrom interface which has the transfrom method which we will impliment in case we want it to work
+
+  transform(value: any, filterString: string, propName: string): any {
+    // in this meethod only value will be the value on which the pipe is added then we can add the params required for pipe to function
+    if (value.length === 0 || filterString === '') {
+      return value;
+    }
+    const resultArray = [];
+    for (const item of value) {
+      if (item[propName] === filterString) {
+        resultArray.push(item);
+      }
+    }
+    return resultArray;
+  }
+
+}
+
+  ```
+
+  so to use this in html we can use it as
+
+
+```html
+ <li
+          class="list-group-item"
+          *ngFor="let server of servers | filter:filteredStatus:'status'" 
+          <!-- as we can  see here the filter the name we have given in pipe also the the first and second params are passed and sepreated by : -->
+          [ngClass]="getStatusClasses(server)">
+```
+
+note if we create the pipe manully without using cli then we need to import the pipe into declarations of the module file as below
+
+```ts
+@NgModule({
+  declarations: [
+    AppComponent,
+    ShortenPipe,
+    FilterPipe
+  ],})
+
+```
+
+
+so basically there are two ways one is template driven pipes and programatic driven pipes
